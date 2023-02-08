@@ -204,7 +204,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
 }
 
-provisioner "remote_exec" {
+resource "null_resource" "run_commands" {
+    provisioner "remote_exec" {
     connection {
         type = "ssh"
         user = "azureuser"
@@ -218,6 +219,7 @@ provisioner "remote_exec" {
         "sudo ./init.sh"
     ]
 
+    }
 }
 
 }
