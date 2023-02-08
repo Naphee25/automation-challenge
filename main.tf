@@ -6,12 +6,12 @@ terraform {
       version = "3.42.0"
     }
   }
-  backend "azurerm" {
-   resource_group_name  = "resource_group"
-   storage_account_name = "cgiautomationchallenge"
-   container_name       = "tfstate"
-   key                  = "terraform.tfstate"
- }
+#   backend "azurerm" {
+#    resource_group_name  = "resource_group"
+#    storage_account_name = "cgiautomationchallenge"
+#    container_name       = "tfstate"
+#    key                  = "terraform.tfstate"
+#  }
 }
 
 
@@ -40,32 +40,33 @@ resource "azurerm_virtual_network" "network" {
 }
 # Define subnet
 resource "azurerm_subnet" "subnet" {
-  name                  = "${var.name}-subnet"
-  address_prefixes      = ["10.0.0.0/24"]
-  resource_group_name   = azurerm_resource_group.resource_group.name
-  virtual_network_name  = azurerm_virtual_network.network.name
+  name = "${var.name}-subnet"
+  address_prefixes = ["10.0.0.0/24"]
+  resource_group_name = azurerm_resource_group.resource_group.name
+  virtual_network_name = azurerm_virtual_network.network.name
 }
 
 # Assign public IP address
 resource "azurerm_public_ip" "public_ip" {
-  name                = "${var.name}-public-ip"
-  location            = azurerm_resource_group.resource_group.location
+  name = "${var.name}-public-ip"
+  location = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
-  allocation_method   = "Static"
+  allocation_method = "Static"
+  domain_name_label = "${var.name}"
 }
 
 # Assign network interface
 resource "azurerm_network_interface" "network_interface" {
-  name                = "${var.name}-network-interface"
-  location            = azurerm_resource_group.resource_group.location
+  name = "${var.name}-network-interface"
+  location = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
 
   # Configure the IP address
   ip_configuration {
-    name                           = "${var.name}-ip-config"
-    subnet_id                     = azurerm_subnet.subnet.id
+    name = "${var.name}-ip-config"
+    subnet_id = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.public_ip.id
+    public_ip_address_id = azurerm_public_ip.public_ip.id
   }
 }
 
@@ -130,11 +131,27 @@ resource "tls_private_key" "ssh_key" {
   rsa_bits  = 4096
 }
 
-# Save the RSA private key as a local file.
+#Save the RSA private key as a local file.
 resource "local_file" "private_key_file" {
   filename = "id_rsa"
   content = tls_private_key.ssh_key.private_key_pem
   file_permission = 0600
+}
+
+resource "azurerm_storage_account" "storage_account" {
+    name = "${var.name}-storage-account"
+    resource_group_name = azurerm_resource_group.resource_group.name
+    location = "${var.location1}"
+    account_tier = "Standard"
+    account_replication_type = "LRS"
+  
+}
+
+resource "azurerm_storage_container" "storage_container" {
+    name = "tfstate"
+    storage_account_name = azurerm_storage_account.storage_account.name
+    container_access_type = "private"
+  
 }
 
 #Configure the vm 
@@ -173,6 +190,35 @@ resource "azurerm_linux_virtual_machine" "vm" {
      }
     disable_password_authentication = true 
   }
+
+  provisioner "file" {
+    connection {
+        type = "ssh"
+        user = "azureuser"
+        password = "Nafitest2!"
+        host = azurerm_public_ip.public_ip.ip_address
+    }
+
+    source = "script/init.sh"
+    destination = "/home/azureuser/init.sh"
+
+}
+
+provisioner "remote_exec" {
+    connection {
+        type = "ssh"
+        user = "azureuser"
+        password = "Nafitest2!"
+        host = azurerm_public_ip.public_ip.ip_address
+    }
+
+    inline = [
+        "ls -a",
+        "sudo chmod +x init.sh",
+        "sudo ./init.sh"
+    ]
+
+}
 
 }
 

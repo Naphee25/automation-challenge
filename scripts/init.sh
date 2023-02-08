@@ -1,27 +1,30 @@
-#!/bin/bash
-sudo apt update
-sudo apt install nginx docker.io git -y
+#! /bin/bash
+
+sudo apt-get update
+sudo apt-get install nginx docker.io git -y
 
 #Allow incoming traffic to Nginx
 sudo ufw enable
 sudo ufw allow 'Nginx Full'
     
-# Clone git repo
-git clone https://github.com/Naphee25/automation-challenge-test.git
-sudo cp -r https://github.com/Naphee25/automation-challenge-test.git /var/www/html
-sudo chown -R $USER:$USER /var/www/html
-    
+echo "<h1> Hello CGI!<h1>\<p> This page was deployed via Terraform</p>" | sudo tee /var/www/html/index.html
+
+   
 # Configure nginx server
-sudo echo 'server { listen 80; server_name ${azurerm_public_ip.public_ip.ip_address}; root /var/www/html; index index.html index.htm; location / { try_files $uri $uri/ /index.html; } }' > /etc/nginx/sites-available/default
+sudo echo 'server { listen 80; server_name ${azurerm_public_ip.public_ip.domain_name_label}; root /var/www/html; index index.html index.htm; location / { try_files $uri $uri/ /index.html; } }' | sudo tee /etc/nginx/sites-available/default
     
 # Start nginx server
-sudo systemctl restart nginx
+#sudo systemctl start nginx
 
 # Install Dependencies
 sudo apt install certbot python3-certbot-nginx -y
 
 # Secure the website with Let's Encrypt
-sudo certbot --nginx --redirect -d $ip_address
+sudo certbot --nginx --redirect -d ${azurerm_public_ip.public_ip.domain_name_label}
+
+cp /var/www/html/index.html ./index.html
+cp /etc/nginx/sites-available/default ./default.conf
+cp /etc/nginx/nginx.conf ./nginx.conf
 
 sudo zip -r lib_letsencrypt.zip /var/lib/letsencrypt/
 sudo zip -r etc_letsencrypt.zip /etc/letsencrypt/
@@ -53,7 +56,7 @@ EXPOSE 80
 EXPOSE 443
 
 # Start nginx
-CMD [\"nginx\", \"daemon off;\"]" > Dockerfile
+CMD [\"nginx\", \"daemon off;\"]" | sudo tee Dockerfile
 
 
 docker build -t nginx .
