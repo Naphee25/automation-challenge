@@ -8,5 +8,5 @@ variable "name" {
 variable "location1" {
     type = string
     description = "VM Location"
-    default = "westeurope"
+    default = "West Europe"
 }
