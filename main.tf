@@ -202,6 +202,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     source = "script/init.sh"
     destination = "/home/azureuser/init.sh"
 
+    }
 }
 
 resource "null_resource" "run_commands" {
@@ -220,7 +221,5 @@ resource "null_resource" "run_commands" {
     ]
 
     }
-}
-
 }
 
