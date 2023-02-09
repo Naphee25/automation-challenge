@@ -1,7 +1,7 @@
 variable "name" {
     type = string
     description = "name"
-    default = "cgiautomateterraform"
+    default = "Nafisah001"
 }
 
 
