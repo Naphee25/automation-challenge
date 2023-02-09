@@ -52,7 +52,7 @@ resource "azurerm_public_ip" "public_ip" {
   location = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
   allocation_method = "Static"
-  domain_name_label = "${var.name}"
+  domain_name_label = "cgiautomateterraform"
 }
 
 # Assign network interface
@@ -139,7 +139,7 @@ resource "local_file" "private_key_file" {
 }
 
 resource "azurerm_storage_account" "storage_account" {
-    name = "${var.name}"
+    name = "cgiautomateterraform"
     resource_group_name = azurerm_resource_group.resource_group.name
     location = "${var.location1}"
     account_tier = "Standard"
