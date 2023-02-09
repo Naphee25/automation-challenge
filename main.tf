@@ -205,21 +205,40 @@ resource "azurerm_linux_virtual_machine" "vm" {
     }
 }
 
-resource "null_resource" "run_commands" {
-    provisioner "remote_exec" {
-    connection {
-        type = "ssh"
-        user = "azureuser"
-        password = "Nafitest2!"
-        host = azurerm_public_ip.public_ip.ip_address
-    }
+resource "azurerm_virtual_machine_extension" "vmext" {
+  name                 = "${var.name}-vmext"
+  virtual_machine_id   = azurerm_linux_virtual_machine.vm.id
+  publisher            = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.0"
 
-    inline = [
-        "ls -a",
-        "sudo chmod +x init.sh",
-        "sudo ./init.sh"
-    ]
+  protected_settings = <<PROT
+ {
+    "script" : "${base64encode(file(var.scfile))}"
+ }
+PROT
 
-    }
+
+  tags = {
+    environment = "Production"
+  }
 }
+
+# resource "null_resource" "run_commands" {
+#     provisioner "remote_exec" {
+#     connection {
+#         type = "ssh"
+#         user = "azureuser"
+#         password = "Nafitest2!"
+#         host = azurerm_public_ip.public_ip.ip_address
+#     }
+
+#     inline = [
+#         "ls -a",
+#         "sudo chmod +x init.sh",
+#         "sudo ./init.sh"
+#     ]
+
+#     }
+# }
 

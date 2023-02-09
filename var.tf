@@ -10,3 +10,9 @@ variable "location1" {
     description = "VM Location"
     default = "westeurope"
 }
+
+
+variable "scfile" {
+  type = string
+  default = "/scripts/init.sh"
+}
