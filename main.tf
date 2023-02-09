@@ -139,7 +139,7 @@ resource "local_file" "private_key_file" {
 }
 
 resource "azurerm_storage_account" "storage_account" {
-    name = "${var.name}-storage-account"
+    name = "${var.name}"
     resource_group_name = azurerm_resource_group.resource_group.name
     location = "${var.location1}"
     account_tier = "Standard"
