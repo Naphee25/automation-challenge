@@ -155,7 +155,7 @@ resource "azurerm_storage_container" "storage_container" {
 }
 
 #Configure the vm 
-resource "azurerm_linux_virtual_machine" "vm" {
+resource "azurerm_virtual_machine" "vm" {
   name = "${var.name}-vm"
   location = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
@@ -207,7 +207,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
 resource "azurerm_virtual_machine_extension" "vmext" {
   name                 = "${var.name}-vmext"
-  virtual_machine_id   = azurerm_linux_virtual_machine.vm.id
+  virtual_machine_id   = azurerm_virtual_machine.vm.id
   publisher            = "Microsoft.Azure.Extensions"
   type                 = "CustomScript"
   type_handler_version = "2.0"
